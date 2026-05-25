@@ -1,104 +1,78 @@
 # Syllabus: Simultaneous Translation Text-to-Text
 
-## Course Goal
+## Mục tiêu khóa học
 
-Build enough conceptual and implementation depth to teach, discuss, and code a small simultaneous translation system from scratch.
+Khóa học xây dựng nền tảng khái niệm và năng lực implementation để người học có thể giải thích, chạy, sửa và mở rộng một hệ thống simultaneous translation nhỏ từ đầu đến cuối.
 
-## Audience
+Trọng tâm không phải là đạt benchmark cao. Trọng tâm là hiểu vì sao một hệ thống dịch đồng thời phải quyết định dưới điều kiện thiếu thông tin tương lai, và vì sao latency-quality tradeoff cần được đo bằng cả trace lẫn metric.
 
-- learners who already know basic deep learning
-- readers who know sequence-to-sequence models at a high level
-- practitioners who want a compact path from theory to runnable code
+## Đối tượng học
 
-## Prerequisites
+- Người đã biết cơ bản về deep learning.
+- Người đã gặp sequence-to-sequence model ở mức khái niệm.
+- Người muốn một lộ trình nhỏ gọn từ lý thuyết đến code chạy được.
+- Người quan tâm tới streaming NLP, speech translation, realtime UX hoặc agentic generation.
 
-- Python and basic PyTorch
-- embeddings, RNNs, attention, and teacher forcing
-- tokenization and padding
-- basic evaluation mindset for sequence generation
+## Điều kiện tiên quyết
 
-## Course Format
+- Python và PyTorch cơ bản.
+- Embedding, RNN, attention và teacher forcing.
+- Tokenization, padding và batching.
+- Tư duy đánh giá cơ bản cho sequence generation.
 
-Six lectures, each designed for 90 to 120 minutes.
+## Hình thức khóa học
 
-## Lecture Sequence
+Khóa học gồm sáu buổi, mỗi buổi phù hợp cho 90 đến 120 phút. Mỗi buổi nên có ba phần: trực giác, formalization và lab nhỏ.
 
-### Lecture 1. Problem Framing
+## Lộ trình bài học
 
-- What simultaneous translation is and why it is hard
-- Difference between offline translation and online translation
-- READ/WRITE action view
-- Prefix-to-prefix intuition
+### Bài 1. Problem framing
 
-Deliverable:
+Người học phân biệt offline translation và simultaneous translation, hiểu `READ`, `WRITE`, source prefix và commitment risk.
 
-- learners can formalize the task and explain the latency-quality tradeoff
+Sản phẩm đầu ra: người học có thể formalize task và giải thích tradeoff giữa latency và quality.
 
-### Lecture 2. Metrics and Tradeoffs
+### Bài 2. Metrics and tradeoffs
 
-- Why BLEU alone is insufficient
-- Average Proportion (AP)
-- Average Lagging (AL)
-- Interpreting latency traces
+Người học hiểu vì sao quality metric đơn lẻ là không đủ, biết đọc latency trace, tính Average Proportion và Average Lagging.
 
-Deliverable:
+Sản phẩm đầu ra: người học có thể tính và diễn giải latency metrics từ một token emission trace.
 
-- learners can compute and interpret latency metrics from a token emission trace
+### Bài 3. Policy design
 
-### Lecture 3. Policy Design
+Người học so sánh fixed policies và adaptive policies, bao gồm wait-k, chunk-based policy, local agreement và confidence-based policy.
 
-- Fixed policies versus adaptive policies
-- Wait-k
-- Chunk-based policies
-- Local agreement
-- Confidence-based policies
+Sản phẩm đầu ra: người học có thể mô tả mỗi policy dùng tín hiệu gì và đánh đổi điều gì.
 
-Deliverable:
+### Bài 4. Model design for the repo
 
-- learners can describe what information each policy uses and what it sacrifices
+Người học hiểu vì sao repo dùng toy seq2seq model, synthetic data, controlled reordering và prefix decoding.
 
-### Lecture 4. Model Design for the Repo
+Sản phẩm đầu ra: người học có thể map notation trong bài học vào PyTorch modules cụ thể.
 
-- Why the repo uses a toy but complete sequence-to-sequence model
-- Synthetic data with controlled reorderings
-- Encoder, decoder, attention
-- Prefix decoding under partial source observation
+### Bài 5. Implementation practicum
 
-Deliverable:
+Người học chạy training loop, decode trên source prefix, cắm policy vào shared runner và đo quality cùng latency.
 
-- learners can map theory to concrete PyTorch modules
+Sản phẩm đầu ra: người học có thể chạy experiment và sửa code có kiểm soát.
 
-### Lecture 5. Implementation Practicum
+### Bài 6. Beyond the baseline
 
-- Training loop
-- Greedy decoding on prefixes
-- Plugging policies into a shared runner
-- Measuring quality and latency side by side
+Người học hiểu giới hạn của toy repo và liên hệ với prefix training, learned policies, simultaneous speech translation và LLM streaming.
 
-Deliverable:
+Sản phẩm đầu ra: người học có thể viết một proposal mở rộng từ baseline sang hệ thống nghiên cứu nghiêm túc hơn.
 
-- learners can run experiments and modify the code safely
+## Gợi ý đánh giá
 
-### Lecture 6. Beyond the Baseline
+- Coding exercise: implement một policy mới.
+- Analysis exercise: so sánh hai policy trên cùng một sentence và giải thích trace.
+- Essay exercise: lập luận khi nào giảm latency đáng đánh đổi bằng giảm quality.
+- Research exercise: thiết kế một stress test cho delayed evidence.
 
-- Prefix training versus full-sentence training
-- Learned policies
-- Simultaneous speech translation parallels
-- Research directions and reading list
+## Milestones gắn với repo
 
-Deliverable:
-
-- learners can position the toy project relative to real research systems
-
-## Assessment Ideas
-
-- coding exercise: implement one new policy
-- analysis exercise: compare two policies on the same sentence and explain the trace
-- essay exercise: argue when a latency reduction is worth the quality loss
-
-## Repository-Based Milestones
-
-1. Read all docs and reproduce the example run.
-2. Change the synthetic grammar and inspect policy behavior.
-3. Implement one additional adaptive policy.
-4. Replace the GRU with a transformer baseline.
+1. Đọc giáo trình và chạy lại example.
+2. Thay synthetic grammar và quan sát policy behavior.
+3. Implement một adaptive policy bổ sung.
+4. Thêm một metric mới để đo stability hoặc burstiness.
+5. Viết báo cáo ngắn kết nối toy system với một hướng nghiên cứu thật.

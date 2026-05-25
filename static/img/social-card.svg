@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f172a"/>
+  <circle cx="180" cy="120" r="240" fill="#4f46e5" opacity="0.32"/>
+  <circle cx="1020" cy="520" r="280" fill="#06b6d4" opacity="0.22"/>
+  <text x="90" y="250" fill="#ffffff" font-family="Arial, sans-serif" font-size="64" font-weight="700">Simultaneous Translation Edu</text>
+  <text x="90" y="340" fill="#c7d2fe" font-family="Arial, sans-serif" font-size="34">Latency, READ/WRITE policy và streaming sequence generation</text>
+</svg>

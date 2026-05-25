@@ -1,150 +1,133 @@
 # Lesson Plans
 
-## Lecture 1. Problem Framing
+## Bài 1. Problem framing
 
-### Teaching objective
+### Mục tiêu giảng dạy
 
-Students should understand simultaneous translation as a control problem layered on top of sequence generation.
+Người học hiểu simultaneous translation như một bài toán điều khiển đặt trên nền sequence generation. Điểm cần nhấn mạnh là hệ thống không chỉ dự đoán token đúng, mà còn phải quyết định khi nào token đó đủ an toàn để commit.
 
-### Session flow
+### Dòng triển khai trên lớp
 
-1. Warm-up: contrast subtitle generation with offline translation.
-2. Define source stream `x_1, x_2, ..., x_n`.
-3. Define target stream `y_1, y_2, ..., y_m`.
-4. Introduce actions:
-   - `READ`: wait for one more source token
-   - `WRITE`: commit one target token
-5. Show why premature commitment is irreversible.
-6. Discuss two failure modes:
-   - low latency but hallucinated output
-   - high quality but unacceptable delay
+1. Mở bằng ví dụ phụ đề trực tiếp: nếu chờ quá lâu thì người xem khó theo dõi, nếu phát quá sớm thì dễ sai.
+2. Định nghĩa source stream `x_1, x_2, ..., x_n` và target stream `y_1, y_2, ..., y_m`.
+3. Giới thiệu hai hành động `READ` và `WRITE`.
+4. Vẽ một timeline nhỏ để thấy token target được phát tại source position nào.
+5. Thảo luận hai failure modes: latency thấp nhưng hallucination, hoặc quality cao nhưng delay không chấp nhận được.
 
-### Board plan
+### Bài tập tại lớp
 
-- draw a timeline with source arrivals
-- mark the exact source position used to emit each target token
-- ask where a policy should wait in a reordering example
+Cho một câu mà object xuất hiện muộn trong source nhưng cần xuất hiện sớm trong target. Yêu cầu người học mô phỏng thủ công `wait-1`, `wait-3` và offline decoding.
 
-### In-class exercise
+### Bài đọc
 
-Give students a sentence where the object appears late in the source but early in the target. Ask them to manually simulate `wait-1`, `wait-3`, and offline decoding.
+Đọc `/docs/01-problem-setup/01-offline-vs-simultaneous` và tóm tắt vai trò của commitment risk.
 
-### Homework
+## Bài 2. Metrics and tradeoffs
 
-Read [docs/01_problem_setup.md](/Users/admin/TuanDung/repos/simultaneous-translation-edu/docs/01_problem_setup.md) and summarize the role of `g(t)`.
+### Mục tiêu giảng dạy
 
-## Lecture 2. Metrics and Tradeoffs
+Người học biết tính latency bằng số, thay vì chỉ nói theo trực giác “nhanh” hoặc “chậm”.
 
-### Teaching objective
+### Dòng triển khai trên lớp
 
-Students should compute latency numerically rather than reason only by intuition.
+1. Ôn lại `g(t)`: hệ thống đã đọc bao nhiêu source tokens khi phát target token thứ `t`.
+2. Tính Average Proportion từ một trace nhỏ.
+3. Tính Average Lagging và giải thích ideal policy có slope đều.
+4. So sánh hai hệ thống có cùng final translation nhưng khác latency trace.
+5. Thảo luận blind spots của metric trung bình.
 
-### Session flow
+### Bài tập tại lớp
 
-1. Review `g(t)`: how many source tokens were consumed when target token `t` was emitted.
-2. Derive AP.
-3. Derive AL and explain why it references an ideal policy with constant slope.
-4. Show two traces with the same final translation but different latency.
-5. Discuss metric blind spots.
+Cho trace `g = [2, 4, 5, 5]`, source length `5`, target length `4`. Yêu cầu người học tính AP và AL, sau đó giải thích trace này có trải nghiệm như thế nào.
 
-### In-class exercise
+### Bài đọc
 
-Provide a small emission trace and ask students to compute AP and AL by hand.
+Đọc `/docs/02-metrics/01-latency-trace` và `/docs/02-metrics/02-average-proportion-average-lagging`.
 
-### Homework
+## Bài 3. Policy design
 
-Read [docs/02_latency_metrics.md](/Users/admin/TuanDung/repos/simultaneous-translation-edu/docs/02_latency_metrics.md) and verify the formulas against the example trace.
+### Mục tiêu giảng dạy
 
-## Lecture 3. Policy Design
+Người học phân biệt model uncertainty và policy conservatism. Một model tự tin không có nghĩa token đã an toàn để phát.
 
-### Teaching objective
+### Dòng triển khai trên lớp
 
-Students should differentiate between model uncertainty and policy conservatism.
+1. Bắt đầu với fixed policies: wait-k và chunked read.
+2. Chuyển sang adaptive policies: local agreement và confidence thresholding.
+3. Lập bảng tín hiệu mà từng policy sử dụng: source position, hypothesis stability, token confidence.
+4. Phân tích vì sao local agreement thường robust nhưng có thể bảo thủ.
+5. Phân tích vì sao confidence threshold có thể aggressive nhưng phụ thuộc calibration.
 
-### Session flow
+### Demo tại lớp
 
-1. Fixed policies:
-   - wait-k
-   - chunked read
-2. Adaptive policies:
-   - local agreement
-   - confidence thresholding
-3. Compare information requirements:
-   - source position only
-   - source position plus hypothesis stability
-   - source position plus token confidence
-4. Show why local agreement can be conservative but robust.
+Chạy cùng một source prefix sequence qua nhiều policy và hiển thị token commits, `read_positions`, AP, AL và F1.
 
-### In-class demo
+### Bài đọc
 
-Run the same prefix sequence through several policies and display token commits.
+Đọc `/docs/03-policies/01-wait-k-fixed-chunk` và `/docs/03-policies/02-local-agreement-confidence`. Viết một đoạn ngắn về khi nào confidence thresholding có thể thất bại.
 
-### Homework
+## Bài 4. Model design
 
-Read [docs/03_policy_design.md](/Users/admin/TuanDung/repos/simultaneous-translation-edu/docs/03_policy_design.md). Write one paragraph on when confidence thresholding can fail.
+### Mục tiêu giảng dạy
 
-## Lecture 4. Model Design
+Người học hiểu vì sao repo dùng mô hình nhỏ và inspectable. Mô hình không nhằm cạnh tranh benchmark, mà nhằm làm rõ interaction giữa source prefix, hypothesis và policy.
 
-### Teaching objective
+### Dòng triển khai trên lớp
 
-Students should understand why the repo's model is intentionally small and inspectable.
+1. Giới thiệu synthetic dataset với delayed target dependencies.
+2. Xem source vocabulary và target vocabulary.
+3. Giải thích encoder unidirectional.
+4. Giải thích attention ở mức shape và intuition.
+5. Giải thích decoder với teacher forcing.
+6. Nhấn mạnh prefix decoding mismatch: train trên full source, test trên partial source.
 
-### Session flow
+### Trọng tâm bảng trắng
 
-1. Synthetic dataset with delayed target dependencies
-2. Source and target vocabularies
-3. Unidirectional encoder
-4. Additive attention
-5. Decoder with teacher forcing
-6. Prefix decoding mismatch: train full sentence, test on partial source
+- Tensor shapes cho encoder outputs.
+- Attention score computation.
+- Vì sao partial-source decoding tạo distribution shift.
 
-### Whiteboard focus
+### Bài đọc
 
-- tensor shapes for encoder outputs
-- attention score computation
-- why partial-source decoding is inherently distribution-shifted
+Đọc `/docs/04-model-training/01-synthetic-data` và `/docs/04-model-training/02-seq2seq-attention`, sau đó annotate training loop trong `src/simulst_edu/train.py`.
 
-### Homework
+## Bài 5. Implementation practicum
 
-Read [docs/04_model_training.md](/Users/admin/TuanDung/repos/simultaneous-translation-edu/docs/04_model_training.md) and annotate the training loop.
+### Mục tiêu giảng dạy
 
-## Lecture 5. Implementation Practicum
+Người học có thể mở rộng code mà không phá evaluation loop.
 
-### Teaching objective
+### Dòng triển khai trên lớp
 
-Students should be able to extend the code without breaking the evaluation loop.
-
-### Session flow
-
-1. Walk through data generation
-2. Build vocabularies
-3. Train the model
-4. Run simultaneous decoding
-5. Log quality and latency metrics
-6. Compare trajectories
+1. Walk through data generation.
+2. Build vocabularies.
+3. Train model.
+4. Run simultaneous decoding.
+5. Log quality và latency metrics.
+6. Compare trajectories giữa các policy.
 
 ### Lab task
 
-Implement a new policy with one extra internal state variable and test it.
+Implement một policy mới có ít nhất một internal state variable. Viết test cho behavior chính và chạy policy đó trong `examples/compare_policies.py`.
 
-### Homework
+### Bài đọc
 
-Complete [docs/05_project_practicum.md](/Users/admin/TuanDung/repos/simultaneous-translation-edu/docs/05_project_practicum.md) exercises.
+Hoàn thành bài trong `/docs/05-labs/01-run-the-lab` và `/docs/05-labs/02-extend-the-system`.
 
-## Lecture 6. Beyond the Baseline
+## Bài 6. Beyond the baseline
 
-### Teaching objective
+### Mục tiêu giảng dạy
 
-Students should understand where the toy project stops being enough.
+Người học hiểu toy project dừng ở đâu và cần gì để tiến tới research system thật.
 
-### Session flow
+### Dòng triển khai trên lớp
 
-1. Prefix-to-prefix training objectives
-2. Learned agents versus hand-designed policies
-3. Beam search in streaming settings
-4. Real benchmark considerations
-5. Relation to speech translation and online ASR
+1. Prefix-to-prefix training objectives.
+2. Learned agents so với hand-designed policies.
+3. Beam search trong streaming settings.
+4. Real benchmark considerations.
+5. Liên hệ với speech translation, online ASR và LLM streaming.
 
-### Final assignment
+### Bài cuối
 
-Produce a short report comparing two policies, one model limitation, and one extension proposal.
+Viết một báo cáo ngắn so sánh hai policy, chỉ ra một hạn chế của model, và đề xuất một hướng mở rộng có thể kiểm chứng bằng experiment.
