@@ -1,44 +1,63 @@
 ---
-title: Từ toy repo tới nghiên cứu thật
+title: Vượt khỏi Baseline
 ---
 
-# Từ toy repo tới nghiên cứu thật
+# Tầm nhìn Nghiên cứu (Research Outlook): Vượt khỏi Baseline
 
-Repo này cố ý nhỏ. Điều đó giúp học cơ chế, nhưng cũng có giới hạn rõ ràng. Khi chuyển sang research system thật, ta cần mở rộng cả model, training objective, policy và evaluation.
+Đối với các bạn PhD Student hoặc Research Scientist, việc cài đặt và chạy thử Wait-k hay Local Agreement chỉ là "hello world" trong chuyên ngành này.
 
-## Prefix-to-prefix training
+Dịch đồng thời hiện nay là một chiến trường cực kỳ nóng (hot topic) tại các hội nghị top tier (ACL, EMNLP, ICLR) vì nó là "Chén thánh" của giao tiếp liên ngôn ngữ thời gian thực. Dưới đây là những hướng đi đang mở, chứa đầy những câu hỏi khoa học mà giới học thuật vẫn đang đau đầu giải quyết. Nếu bạn đang tìm kiếm ý tưởng cho luận văn, hãy cân nhắc các hướng sau:
 
-Trong repo, model được train chủ yếu như một offline seq2seq model. Khi simultaneous decoding, model phải decode từ source prefix. Đây là mismatch lớn. Research system thường dùng prefix-to-prefix training hoặc objective latency-aware để model quen với partial source.
+## 1. Simultaneous Speech-to-Text (S2T) và Speech-to-Speech (S2S)
 
-Ý tưởng chung là không chỉ dạy model dịch khi thấy toàn câu, mà dạy nó sinh target hợp lý ở nhiều mức source prefix khác nhau.
+Toàn bộ giáo trình từ đầu đến giờ đều giả định đầu vào là Văn bản (Text-to-Text). Nhưng ngoài đời, đầu vào là Âm thanh (Audio/Speech).
 
-## Learned policy
+**Nỗi đau:**
+- Văn bản có ranh giới rõ ràng (khoảng trắng giữa các từ). Âm thanh là một luồng tín hiệu liên tục (continuous stream). Khi nào thì hệ thống biết một từ đã kết thúc để gọi hàm `READ`?
+- Làm sao phân biệt được diễn giả đang ngập ngừng (hesitation - filler words như "ờ", "ừm") hay đang nói một từ dài?
 
-Hand-designed policy dễ hiểu, nhưng có giới hạn. Learned policy có thể dùng reinforcement learning, imitation learning hoặc differentiable objectives để học khi nào nên `READ` và `WRITE`.
+**Hướng nghiên cứu:**
+- Tích hợp mô hình VAD (Voice Activity Detection) vào ngay bên trong cơ chế Attention.
+- Phát triển các Policy không chờ theo từ (Word), mà chờ theo khung âm thanh (Acoustic frames - vd: 50ms, 100ms) - khái niệm *Fixed pre-decision*.
 
-Tuy nhiên learned policy khó debug hơn. Nó cần reward hoặc objective cân bằng quality và latency. Nếu reward thiết kế kém, policy có thể học hành vi nhìn tốt trên metric nhưng tệ với người dùng.
+## 2. Hallucination Management (Quản lý "Ảo giác")
 
-## Streaming attention
+Khi bị thiếu thông tin (Delayed evidence), mô hình thường đoán mò (Anticipation). Nếu đoán đúng, độ trễ cực thấp. Nếu đoán sai (Hallucination), thảm họa xảy ra.
 
-Một hướng khác là thay attention full-context bằng attention có ràng buộc monotonic hoặc streaming. Mục tiêu là làm architecture phù hợp hơn với input đến dần. Điều này đặc biệt quan trọng khi chuyển từ text-to-text sang speech translation, nơi acoustic frames đến theo thời gian.
+**Câu hỏi khoa học:**
+- Làm sao để mô hình biết được rằng: *"Việc chờ thêm 1 từ nữa sẽ thay đổi hoàn toàn ý nghĩa câu dịch, nên tốn thêm 1 khoảng Latency là hoàn toàn xứng đáng"*?
+- Có thể dùng các kỹ thuật Reinforcement Learning (Học tăng cường) để thiết kế một hàm Reward (Phần thưởng) vừa phạt độ trễ (AL cao), vừa phạt lỗi ảo giác trầm trọng không?
 
-## Evaluation thật
+## 3. Kiến trúc Streaming Transformer (Universal Transformer / MoE)
 
-Token F1 trong repo chỉ là metric toy. Hệ thống thật cần đánh giá bằng nhiều lớp:
+Mô hình GRU chúng ta dùng ở Lab rất dễ kiểm soát. Tuy nhiên, Transformer thống trị SOTA. Làm sao để bắt Transformer chạy Streaming mà không làm "nổ" bộ nhớ (OOM) do cơ chế KV-Cache dài vô tận?
 
-- quality metrics như BLEU, chrF, COMET hoặc human rating;
-- latency metrics như AP, AL hoặc biến thể phù hợp speech;
-- stability metrics nếu output có revision;
-- user-facing metrics như smoothness, burstiness và perceived delay.
+**Hướng nghiên cứu:**
+- **Monotonic Infinite Lookback (MILK) Attention:** Giới hạn tầm nhìn của Self-attention.
+- **Block-processing / Chunk-based Transformer:** Xử lý âm thanh theo từng khối đan xen để tính toán KV-Cache hiệu quả.
 
-Không có một metric đơn lẻ nào đủ để đại diện toàn bộ trải nghiệm.
+## 4. Multi-modal Simultaneous Translation
 
-## Liên hệ với LLM streaming
+Dịch đồng thời không chỉ dựa vào tai nghe. Các phiên dịch viên cabin giỏi nhất thế giới thường dùng cả mắt để quan sát ngôn ngữ cơ thể (body language) hoặc slide trình chiếu của diễn giả để phán đoán trước những gì diễn giả chuẩn bị nói (Visual Context).
 
-Dù repo nói về translation, tư duy timing cũng xuất hiện trong LLM streaming. Một assistant có thể stream token quá sớm rồi phải sửa ý. Một agent có thể gọi tool quá sớm khi chưa đủ context. Một hệ thống retrieval có thể trả lời trước khi bằng chứng quan trọng được retrieved.
+**Hướng nghiên cứu:**
+- Xây dựng hệ thống dịch nhận cả luồng âm thanh và luồng Video.
+- Dùng Video (khẩu hình miệng, slide text) làm yếu tố giảm độ trễ (Anticipation qua thị giác).
 
-Vì vậy, bài học rộng hơn là: trong mọi hệ thống generation có thời gian, ta cần tách prediction khỏi commitment. Biết nói gì là một chuyện. Biết khi nào nên nói là chuyện khác.
+## 5. Metric "Nhân bản" hơn: Thay thế AL?
 
-## Điều cần giữ lại
+Average Lagging (AL) rất tốt về mặt toán học, nhưng lại không phản ánh đúng tâm lý người đọc phụ đề. Việc phụ đề giật cục, xuất hiện rồi biến mất (Flickering), hoặc chữ hiện ra quá nhanh làm người xem không đọc kịp (Reading Speed Constraint) lại là thứ quyết định UX/UI.
 
-Toy repo là điểm xuất phát, không phải đích đến. Nó cho ta ngôn ngữ để nói về latency, policy và trace. Khi sang nghiên cứu thật, các thành phần sẽ phức tạp hơn, nhưng câu hỏi nền vẫn giữ nguyên: hệ thống đã có đủ bằng chứng để commit output chưa?
+**Hướng nghiên cứu:**
+- Đề xuất các metric đánh giá chất lượng mới (như Flicker Rate, Reading Speed Penalty).
+- Đánh giá bằng LLM-as-a-Judge: Dùng GPT-4 để xem video có kèm phụ đề sinh tự động và cho điểm độ tự nhiên thay vì chỉ đếm số lượng từ bị trễ.
+
+---
+
+## Tạm kết khóa học
+
+Hành trình từ việc hiểu định nghĩa cơ bản đến khi đụng chạm vào những vấn đề SOTA nhất của Dịch đồng thời đã khép lại. Mong rằng khóa học gọn nhẹ này đã trang bị cho bạn một "lăng kính" đủ sắc bén để tự mình bóc tách các paper nghiên cứu phức tạp trong tương lai.
+
+Hãy luôn nhớ nguyên lý cốt lõi: **Simultaneous Translation là sự khiêu vũ giữa Dự đoán (Model) và Đợi chờ (Policy).**
+
+Cảm ơn bạn đã tham gia khóa học. Hẹn gặp lại trên bảng xếp hạng các hội nghị khoa học!
