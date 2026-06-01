@@ -65,9 +65,11 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           routeBasePath: 'docs',
-          editUrl: 'https://github.com/tuandung222/simultaneous-translation-edu/edit/codex/init/',
+          editUrl: 'https://github.com/tuandung222/simultaneous-translation-edu/edit/main/',
           remarkPlugins: [remarkMath],
-          rehypePlugins: [rehypeKatex],
+          rehypePlugins: [
+            [rehypeKatex, {strict: false}]
+          ],
           showLastUpdateTime: false,
           numberPrefixParser: false,
         },
