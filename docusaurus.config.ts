@@ -15,9 +15,9 @@ const config: Config = {
   },
 
   url: 'https://tuandung222.github.io',
-  baseUrl: '/simultaneous-translation-edu/',
+  baseUrl: '/simultaneous-translation-edu-v2/',
   organizationName: 'tuandung222',
-  projectName: 'simultaneous-translation-edu',
+  projectName: 'simultaneous-translation-edu-v2',
   trailingSlash: false,
   onBrokenLinks: 'warn',
 
