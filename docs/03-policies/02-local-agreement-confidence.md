@@ -33,7 +33,7 @@ Tham số duy nhất của thuật toán này là ngưỡng chờ $N$ (Ví dụ:
 ```mermaid
 flowchart TD
     Start[Trạng thái hiện tại: Đã đọc x_i] --> Pred1{Dự đoán y_target là gì?}
-    Pred1 -- "Gợi ý: 'Apple'" --> Read1[READ: Đọc thêm x_{i+1}]
+    Pred1 -- "Gợi ý: 'Apple'" --> Read1["READ: Đọc thêm x_(i+1)"]
     Read1 --> Pred2{Dự đoán lại có đổi ý không?}
 
     Pred2 -- "Đổi ý thành 'Banana'!" --> Reset[Reset chuỗi đồng thuận = 0]
